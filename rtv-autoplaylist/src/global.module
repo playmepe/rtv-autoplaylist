@@ -1,0 +1,14 @@
+' Gambas module file
+
+Public ArchivoDatos As String = "~/prog_horario.dat"
+
+
+Public dHabilitado As Boolean[] = New Boolean[]
+Public dHora As Integer[] = New Integer[] 
+Public dMinuto As Integer[] = New Integer[] 
+Public dDias As String[] = New String[]
+Public dTitulo As String[] = New String[]
+Public dComando As String[] = New String[]
+Public dHecho As Boolean[] = New Boolean[]
+
+Public Udp1 As UdpSocket = New UdpSocket

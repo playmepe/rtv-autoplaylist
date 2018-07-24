@@ -1,0 +1,113 @@
+' Gambas class file
+
+Private imagen As Image
+
+Public Sub DrawingArea1_Draw()
+
+  'FMain.TextLabelDuracion.Text   'para que muestre la pantalla
+
+End
+
+Public Sub embPlayer_Embed()
+
+ 'FMain.TextLabelDuracion.Text   'para que muestre la pantalla 
+
+End
+
+Public Sub Form_Resize()
+
+  embPlayer.Move(8, 8, Me.ClientW - 16, Me.ClientH - panButton.H - 8)
+  'panButton.Move(0, Me.CLientH - panButton.H, Me.CLientW)
+  'txtAbout.Move(16, 16, embPlayer.W - 16, embPlayer.H - 16)
+  MediaViewVideo.Height = FMain.Height
+  MediaViewVideo.Width = FMain.Width
+End
+
+Public Sub MediaViewVideo_MouseDown()
+
+  'jj
+
+End
+
+Public Sub Button1_Click()
+
+  If Me.Border = True Then                                                      'If there is a Form border then..
+  Me.Border = False                                                           'Form border - turn it off
+  Me.FullScreen = True                                                        'FullScreen mode on
+  Me.Background = Color.Black                                                 'Change background colour to black
+ ' MediaViewVideo.Border = False                                                   'MediaView border - turn it off
+ 'MediaViewVideo.ShowControl = False                                              'Hide the MediaView controls
+  'Timer1.Delay = 1500                                                         'Set the Timer delay
+ ' Timer1.Enabled = True                                                       'Start the Timer. This controls how long 'Move the mouse to view controls' stays on the screen
+  'Timer1_Timer                                                                'Don't wait for the Timer go there now!
+ Else                                                                         'Else If there no Form border then it's already in FullScreen mode..
+   Me.Mouse = Mouse.Default                                                    'Show the mouse
+ ' HBoxControls.Visible = True                                                 'Show the HBox containing the toolbar controls  
+  Me.Border = True                                                            'Form border - turn it on
+  Me.FullScreen = False                                                       'FullScreen mode off
+  Me.Background = Color.Default                                               'Reset background colour
+  'MediaViewVideo.Border = True                                                    'MediaView border - turn it on
+  'MediaViewVideo.ShowControl = True                                               'Show the MediaView controls
+  'Timer1.Enabled = False                                                      'Stop the Timer 
+End If
+
+End
+
+Public Sub Timer1_Timer()
+
+  'MediaViewVideo.Height = pantalla.Height
+ ' MediaViewVideo.Width = pantalla.Width
+ 
+ imagen = Image.Load("tv.png")
+  dibuja()
+
+End
+
+Public Sub Form_Show()
+
+  logo.Show
+
+End
+
+Public Sub Form_Open()
+
+  'Me.Title = "Paint.Clip"
+  'RadioButton1_Click()
+
+End
+
+Public Sub dibuja()
+
+  'Paint.Begin(DrawingArea1)
+  'Paint.Arc(128.0, 128.0, 120)
+  'Paint.Clip
+  'Paint.Scale(256 / imagen.Width, 256 / imagen.Height)
+  'Paint.Brush = Paint.Image(imagen, 128, 128)
+  'Paint.Rectangle(0, 0, 4096, 4096)
+  'Paint.Translate(-128, -128)
+  'Paint.Fill 
+  'Paint.End
+'Timer1.Enabled = False
+End
+
+
+
+Public Sub Button2_Click()
+
+  Dialog.Path = User.Home
+  Dialog.Filter = ["*.png;*.jpg;*.jpeg;*.bmp", "Picture files"]
+ 
+  If Dialog.OpenFile() Then Return
+
+  Select Case File.Ext(Dialog.Path)
+    Case "png", "jpg", "jpeg", "bmp"
+    Case Else
+      Message.Error("Imagen no válida!")
+      Return
+  End Select
+
+  imagen = Image.Load(Dialog.Path)
+  dibuja()
+
+
+End

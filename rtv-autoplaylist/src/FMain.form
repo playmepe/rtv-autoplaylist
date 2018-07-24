@@ -1,0 +1,52 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(214.25,0,90,60)
+  Expand = True
+  Icon = Picture["tv.png"]
+  Persistent = True
+  FullScreen = True
+  AutoResize = True
+  { embPlayer Embedder
+    MoveScaled(0,0,90,60)
+    Visible = False
+    Background = &H000000&
+    Expand = True
+  }
+  { DrawingArea1 DrawingArea
+    MoveScaled(0,0,123,65)
+    { panButton Panel
+      MoveScaled(121,63,1,1)
+      Visible = False
+    }
+    { PictureLogo PictureBox
+      MoveScaled(0,0,11,6)
+      NoTabFocus = True
+      Picture = Picture["tv.png"]
+      Stretch = True
+      AutoResize = True
+      Alignment = Align.Center
+    }
+  }
+  { MediaViewVideo MediaView
+    MoveScaled(0,0,90,60)
+    #Translate = False
+    Enabled = False
+    Background = Color.Black
+    Drop = True
+    Expand = True
+    ShowControl = False
+  }
+  { Button1 Button
+    MoveScaled(70,53,16,4)
+    Visible = False
+  }
+  { Timer1 #Timer
+    #MoveScaled(71,40)
+    Enabled = True
+  }
+  { Button2 Button
+    MoveScaled(70,33,16,4)
+    Visible = False
+  }
+}

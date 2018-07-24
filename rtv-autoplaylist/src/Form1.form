@@ -1,0 +1,461 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(1,1,146,101)
+  Background = Color.Background
+  Text = ("PLAYLIST-EVENTOS")
+  Icon = Picture["auto.png"]
+  Stacking = Window.Above
+  { Menu8 Menu
+    Text = ("Archivo")
+  }
+  { Menu7 Menu
+    Text = ("Editar")
+    { Menu1 Menu
+      Text = ("Probar Comando")
+    }
+    { Menu2 Menu
+      Text = ("Eliminar")
+    }
+    { Menu3 Menu
+      Text = ("Modificar")
+    }
+    { Menu4 Menu
+      Text = ("Agregar")
+    }
+    { Menu5 Menu
+      Text = ("Habilitar")
+    }
+    { Menu6 Menu
+      Text = ("Deshabilitar")
+    }
+  }
+  { botMenu Button
+    MoveScaled(77,1,14,4)
+    Visible = False
+    Text = ("Menu")
+  }
+  { DrawingArea1 DrawingArea
+    MoveScaled(38,0,7,6)
+  }
+  { Panel1 Panel
+    MoveScaled(1,25,144,73)
+    Expand = True
+    AutoResize = True
+    { TabPanel1 TabPanel
+      MoveScaled(1,2,142,70)
+      Tracking = True
+      Spacing = True
+      Count = 6
+      Index = 0
+      Text = ("PLAYLIST-GENERAL")
+      { ButtonSTOP Button
+        MoveScaled(105,1,13,5)
+        Visible = False
+      }
+      { Button9 Button
+        MoveScaled(63,2,13,4)
+        Visible = False
+      }
+      { ListBoxPlaylist ListBox
+        MoveScaled(1,7,140,58)
+        Drop = True
+        Expand = True
+        Mode = Select.Multiple
+      }
+      { Button8 Button
+        MoveScaled(76,2,13,4)
+        Visible = False
+      }
+      { Button7 Button
+        MoveScaled(89,2,13,4)
+        Visible = False
+      }
+      { Eliminar Button
+        MoveScaled(119,0.625,11,6)
+        Text = ("ELIMINAR")
+      }
+      { addmulti Button
+        MoveScaled(130,0.625,11,6)
+        Text = ("AGREGAR")
+      }
+      { timerplayfinal #Timer
+        #MoveScaled(35,8)
+      }
+      { TimerPlaylist #Timer
+        #MoveScaled(16,8)
+        Delay = 500
+      }
+      { TimerEstado #Timer
+        #MoveScaled(47,8)
+      }
+      { TimerPlaylist2 #Timer
+        #MoveScaled(16,16)
+      }
+      Index = 1
+      Text = ("PLAYLIST-EVENTOS")
+      { ButtonAddEvento Button
+        MoveScaled(126,0.625,14,6)
+        Text = ("ADD-EVENTO")
+      }
+      { ButtonEvento Button
+        MoveScaled(101,0.625,13,6)
+        #Translate = False
+        Visible = False
+        Text = "EVENTO"
+      }
+      { Button1 Button
+        MoveScaled(83,1,16,4)
+        Visible = False
+      }
+      { ButtonDelEventos Button
+        MoveScaled(114,0.625,12,6)
+        Text = ("ELIMINAR")
+      }
+      { ListBoxEventos ListBox
+        MoveScaled(0,7,140,47)
+        Drop = True
+        Expand = True
+      }
+      Index = 2
+      Text = ("EVENTOS")
+      { !GridView1 GridView
+        MoveScaled(0,7,140,57)
+        #Public = True
+        Background = Color.Background
+        Tracking = True
+        Expand = True
+        PopupMenu = "Menu7"
+        Mode = Select.Single
+        ShowCursor = True
+        AutoResize = False
+      }
+      Index = 3
+      Text = ("MPLAYER")
+      { panButton Panel
+        MoveScaled(1,24,46,6)
+        Visible = False
+        { btnPlay Button
+          MoveScaled(1,1,4,4)
+          Enabled = False
+          Picture = Picture["icon:/small/play"]
+        }
+        { btnPause Button
+          MoveScaled(6,1,4,4)
+          Enabled = False
+          Picture = Picture["icon:/small/pause"]
+        }
+        { btnStop Button
+          MoveScaled(11,1,4,4)
+          Enabled = False
+          Picture = Picture["icon:/small/stop"]
+        }
+        { btnOpen Button
+          MoveScaled(16,1,4,4)
+          Picture = Picture["icon:/small/open"]
+        }
+        { Button11 Button
+          MoveScaled(28,1,16,4)
+        }
+      }
+      { embPlayer Embedder
+        MoveScaled(1,1,45,22)
+        Visible = False
+        Background = &H000000&
+      }
+      { TextBox6 TextBox
+        MoveScaled(1,31,52,4)
+        Visible = False
+        Text = ("monitor proceso")
+      }
+      { ButtonDirectorio ToolButton
+        MoveScaled(48,1,17,4)
+        Visible = False
+        ToolTip = ("selecciona directorio")
+      }
+      { GridViewCanciones GridView
+        MoveScaled(2,36,30,10)
+        Visible = False
+        ToolTip = ("Haga doble click para escuchar una canción")
+        Drop = True
+        Expand = True
+        Mode = Select.Single
+      }
+      { timShow #Timer
+        #MoveScaled(30,22)
+        Delay = 500
+      }
+      Index = 4
+      Text = ("FILE")
+      { FileChooser1 FileChooser
+        MoveScaled(0,0,126,62)
+        Expand = True
+        Filter = [("*.avi;*.mp4;*.webm"), ("")]
+      }
+      Index = 5
+      Text = ("INFO")
+      { TextBox1 TextBox
+        MoveScaled(36,4,24,4)
+        Visible = False
+      }
+      { TextBox5 TextBox
+        MoveScaled(35,8,24,4)
+        Visible = False
+      }
+      { TextBox7 TextBox
+        MoveScaled(35,12,24,4)
+        Visible = False
+      }
+      { TextBox8 TextBox
+        MoveScaled(34,16,24,4)
+        Visible = False
+      }
+      { TextBox9 TextBox
+        MoveScaled(34,20,24,4)
+        Visible = False
+      }
+      { TextBox10 TextBox
+        MoveScaled(34,24,24,4)
+        Visible = False
+      }
+      { Label3 Label
+        MoveScaled(3,4,21,4)
+        Visible = False
+        Text = ("ListBoxPlaylist Index")
+      }
+      { Label4 Label
+        MoveScaled(3,28,21,4)
+        Visible = False
+        Text = ("ListBoxPlaylist Count")
+      }
+      { Label5 Label
+        MoveScaled(3,12,21,4)
+        Visible = False
+        Text = ("ListBoxEventos.Index")
+      }
+      { Label6 Label
+        MoveScaled(3,16,31,4)
+        Visible = False
+        Text = ("Trim(ListBoxEventos.Current.Text)")
+      }
+      { Label7 Label
+        MoveScaled(3,20,30,4)
+        Visible = False
+        Text = ("ListBoxPlaylist.index + 1")
+      }
+      { Label8 Label
+        MoveScaled(3,24,29,4)
+        Visible = False
+        Text = ("ListBoxPlaylist.Current.Text")
+      }
+      { ValueBox3 ValueBox
+        MoveScaled(34,29,24,4)
+        Visible = False
+      }
+      { TextBox11 TextBox
+        MoveScaled(35,35,24,4)
+        Visible = False
+      }
+      { Label9 Label
+        MoveScaled(3,35,32,4)
+        Visible = False
+        Text = ("Trim(ListBoxPlaylist.Current.Text)")
+      }
+      { TextBox12 TextBox
+        MoveScaled(35,39,24,4)
+        Visible = False
+      }
+      { Label10 Label
+        MoveScaled(3,39,32,4)
+        Visible = False
+        Text = ("Trim(ListBoxPlaylist.Current.Text)")
+      }
+      { TextBox13 TextBox
+        MoveScaled(35,43,24,4)
+        Visible = False
+      }
+      { Label11 Label
+        MoveScaled(3,43,32,4)
+        Visible = False
+        Text = ("Trim(ListBoxPlaylist.Current.Text)")
+      }
+      { ValueBox4 ValueBox
+        MoveScaled(35,48,24,4)
+        Visible = False
+      }
+      { ValueBox5 ValueBox
+        MoveScaled(35,53,24,4)
+        Visible = False
+      }
+      { Label12 Label
+        MoveScaled(3,48,24,4)
+        Visible = False
+        Text = ("ListBoxPlaylist.index")
+      }
+      Index = 0
+    }
+  }
+  { Timer1 #Timer
+    #MoveScaled(133,52)
+  }
+  { Timer2 #Timer
+    #MoveScaled(133,44)
+    Delay = 3000
+  }
+  { timMusic #Timer
+    #MoveScaled(133,59)
+  }
+  { TabPanel2 TabPanel
+    MoveScaled(1,-4,144,28)
+    Index = 0
+    Text = ("")
+    { TextLabel6 TextLabel
+      MoveScaled(128,19,15,4)
+      Text = (" ")
+      Border = Border.Plain
+    }
+    { TextBoxSiguiente TextBox
+      MoveScaled(36,5,107,4)
+      Text = ("Siguiente") & "..."
+    }
+    { TextBox4 TextBox
+      MoveScaled(34,19,10,4)
+    }
+    { TextLabelDuracion TextLabel
+      MoveScaled(44,19,10,4)
+      Text = ("Duracion: ")
+      Alignment = Align.Center
+    }
+    { TextBox3 TextBox
+      MoveScaled(54,19,10,4)
+    }
+    { TextLabel1 TextLabel
+      MoveScaled(81,19,18,4)
+      Visible = False
+      Text = ("CLOSED")
+      Alignment = Align.Center
+      Border = Border.Plain
+    }
+    { TextLabelReproduciendo TextLabel
+      MoveScaled(19,19,15,4)
+      Text = ("Reproduciendo: ")
+      Alignment = Align.Center
+    }
+    { playbtn Button
+      MoveScaled(97,10,10,4)
+      Visible = False
+      Text = ("PlayP")
+    }
+    { ButtonPause Button
+      MoveScaled(124,10,10,4)
+      Text = ("PAUSE")
+    }
+    { stopbtn Button
+      MoveScaled(114,10,10,4)
+      Text = ("STOP")
+    }
+    { checkcontinua CheckBox
+      MoveScaled(129,19.625,13,3)
+      AutoResize = True
+      Text = ("AUTO")
+      Value = CheckBox.None
+    }
+    { TextBox2 TextBox
+      MoveScaled(64,19,10,4)
+      Visible = False
+    }
+    { ValueBox1 ValueBox
+      MoveScaled(78,19,4,4)
+      Visible = False
+    }
+    { ValueBox2 ValueBox
+      MoveScaled(74,19,4,4)
+      Visible = False
+    }
+    { TextLabel2 TextLabel
+      MoveScaled(112,19,16,4)
+      Alignment = Align.Center
+      Border = Border.Plain
+    }
+    { TextBoxAire TextBox
+      MoveScaled(36,1,107,4)
+      Text = ("Reproduciendo") & "..."
+    }
+    { TextLabel3 TextLabel
+      MoveScaled(17,1,19,4)
+      Text = ("REPRODUCIENDO:")
+      Alignment = Align.Center
+    }
+    { TextLabel4 TextLabel
+      MoveScaled(23,5,14,4)
+      Text = ("SIGUIENTE:")
+      Alignment = Align.Center
+    }
+    { ButtonPlay Button
+      MoveScaled(134,10,9,4)
+      Text = ("PLAY")
+    }
+    { LabelDia Label
+      MoveScaled(2,7,15,7)
+      Font = Font["+2"]
+      Text = ("dia")
+      Alignment = Align.Center
+      Border = Border.Plain
+    }
+    { LabelHora Label
+      MoveScaled(2,1,15,5)
+      Font = Font["DejaVu Sans,+3"]
+      Text = ("00:00:00")
+      Alignment = Align.Center
+      Border = Border.Plain
+    }
+    { Button5 Button
+      MoveScaled(68,10,9,4)
+      Visible = False
+    }
+    { TextStatusPlay TextLabel
+      MoveScaled(99,19,12,4)
+      Visible = False
+      Text = ("STOP")
+      Alignment = Align.Center
+      Border = Border.Plain
+    }
+    { TextBoxEventos TextBox
+      MoveScaled(36,14,68,4)
+      Text = ("Evento") & "..."
+    }
+    { ButtonPause2 Button
+      MoveScaled(124,14,10,4)
+      Text = ("PAUSE")
+    }
+    { Button6 Button
+      MoveScaled(134,14,9,4)
+      Text = ("PLAY")
+    }
+    { stopbtn2 Button
+      MoveScaled(114,14,10,4)
+      Text = ("STOP")
+    }
+    { TextBoxPlaylist TextBox
+      MoveScaled(36,10,68,4)
+      Text = ("Proximo") & "..."
+    }
+    { Label1 Label
+      MoveScaled(17,14,19,4)
+      Text = ("EVENTO PROXIMO:")
+    }
+    { Label2 Label
+      MoveScaled(19.625,10,17,4)
+      Text = ("PROXIMO TEMA:")
+    }
+    { ButtonPantFull Button
+      MoveScaled(104,14,10,4)
+      Text = ("FPantalla")
+    }
+    { ButtonLogo Button
+      MoveScaled(104,10,10,4)
+      Text = ("Logo")
+    }
+    Index = 0
+  }
+}

@@ -1,0 +1,1389 @@
+' Gambas class file
+
+' Gambas class file
+
+'' Autor Vuoot
+'' Fuente
+'' http://www.gambas-it.org/wiki/index.php?title=Guide_della_comunit%C3%A0#Video
+'' http://www.gambas-it.org/wiki/index.php?title=Gestione_dei_file_video_con_le_funzioni_esterne_del_API_di_LibVLC
+
+'' http://www.videolan.org/developers/vlc/doc/doxygen/html/index.html
+' Gambas class file
+
+'Property TagsX As Integer
+
+'ftags
+'Private $iTagsX As Integer
+
+Public Sub _new()
+  
+  Application.MainWindow = Me
+  '$iTagsX = - FTags.W
+  
+End
+
+Private $hPlayer As MediaPlayer
+Private $hImage As MediaControl
+Private $hFilter As MediaFilter
+Private $hOutput As MediaContainer
+Private $aVisualisation As MediaControl[]
+
+Private $fPos As Float
+Private $fLength As Float
+Private $iVisualisation As Integer
+Private $fVolume As Float
+Private $bSuspend As Boolean
+Private $bShowTags As Boolean
+
+Private $hProcess As Process
+Private $bQuit As Boolean
+Private $sPath As String
+Private $bShow As Boolean
+Public bRunVideo As Boolean 
+''''''''
+Public mplyr As New MediaPlayer As "mp"  ''''''''''''
+Private infoFile As New String[]
+Private manu As Boolean
+Private percorsi As New String[]
+Private numFile As Short
+''''''''''
+Public DrawingArea2 As New DrawingArea(FMain)
+Private reproduciendoVideo As Boolean = False
+Private rutaReproducir As String
+
+Private inst As Pointer
+Private mp As Pointer
+
+Private m As Pointer
+Private id As Integer
+
+Library "libvlc:5"
+
+Private Enum libvlc_NothingSpecial = 0,
+  libvlc_Opening,
+  libvlc_Buffering,
+  libvlc_Playing,
+  libvlc_Paused,
+  libvlc_Stopped,
+  libvlc_Ended,
+  libvlc_Error
+
+' libvlc_instance_t * libvlc_new (int argc, const char *const *argv)
+' Create And initialize a libvlc instance.
+Private Extern libvlc_new(argc As Integer, argv As String) As Pointer
+
+' libvlc_media_t * libvlc_media_new_path (libvlc_instance_t *p_instance, const char *path)
+' Create a media for a certain file path.
+Private Extern libvlc_media_new_path(p_instance As Pointer, path As String) As Pointer
+
+' libvlc_media_player_t * libvlc_media_player_new_from_media (libvlc_media_t *p_md)
+' Create a Media Player object from a Media.
+Private Extern libvlc_media_player_new_from_media(p_md As Pointer) As Pointer
+
+' void libvlc_media_player_set_xwindow (libvlc_media_player_t *p_mi, uint32_t drawable)
+' Set an X Window System drawable where the media player should render its video output.
+Private Extern libvlc_media_player_set_xwindow(p_mi As Pointer, drawable As Integer)
+
+' int libvlc_media_player_play (libvlc_media_player_t * p_mi)
+' Play the video file.
+Private Extern libvlc_media_player_play(p_mi As Pointer) As Integer
+
+' void libvlc_media_player_stop (libvlc_media_player_t * p_mi)
+' Stop the video file
+Private Extern libvlc_media_player_stop(p_mi As Pointer)
+
+' libvlc_time_t libvlc_media_player_get_length(libvlc_media_player_t *, libvlc_exception_t *)
+' Get the current movie length (in ms).
+Private Extern libvlc_media_player_get_length(p_mi As Pointer, l_ex As Pointer) As Integer
+
+' libvlc_time_t libvlc_media_player_get_time(libvlc_media_player_t * p_mi)
+' Get the current movie time (in ms).
+Private Extern libvlc_media_player_get_time(p_mi As Pointer) As Integer
+
+' libvlc_state_t libvlc_media_player_get_state(libvlc_media_player_t *p_mi)
+' Get current movie state.
+Private Extern libvlc_media_player_get_state(p_mi As Pointer) As Integer
+
+' void libvlc_media_player_release (libvlc_media_player_t * p_mi)
+' Release a media_player after use Decrement the reference count of a media player object.
+Private Extern libvlc_media_player_release(p_mi As Pointer)
+
+' libvlc_release (libvlc_instance_t * p_instance)
+' Decrement the reference count of a libvlc instance, and destroy it if it reaches zero.
+Private Extern libvlc_release(p_instance As Pointer)
+
+' void   libvlc_media_player_pause (libvlc_media_player_t *p_mi)
+' Toggle pause.
+Private Extern libvlc_media_player_pause(p_mi As Pointer)
+
+Private Extern exitus(status As Integer) In "libc:6" Exec "exit"
+
+Public BarraMenu As Menu
+Public ItemMenu As Menu
+
+
+
+Public Sub Form_Open()
+  Dim a As Integer
+  global.Udp1.TargetHost = "127.0.0.1"  'IP destino, como string
+  global.Udp1.TargetPort = 64001 'puerto destino, entero entre 1 y 65535
+  global.Udp1.Bind
+  
+  Timer1.Delay = 500  'cada 1/2 segundo
+  Timer1.Enabled = True
+  Timer1_Timer()
+  Me.Text = "Software de Automatizacion de Radio y Tv"
+  'Me.Height = 800
+  'Me.Width = 1024
+  ' a = Me.Width
+  Me.GridView1.Columns.Count = 6
+
+  Me.GridView1[0, 0].text = "Exe"
+  Me.GridView1[0, 1].text = "Hora"
+  Me.GridView1[0, 2].text = "Dias"
+  Me.GridView1[0, 3].text = "Accion a ejecutar"
+  Me.GridView1[0, 4].text = "Faltan"
+  Me.GridView1[0, 5].text = "Comando"
+  Me.GridView1.Columns[0].Width = 35
+  Me.GridView1.Columns[1].Width = 55
+  Me.GridView1.Columns[2].Width = 65
+  Me.GridView1.Columns[3].Width = 100
+  Me.GridView1.Columns[4].Width = 50
+Me.GridView1.Columns[5].Width = 200
+  a = a - Me.GridView1.Columns[0].Width
+  a = a - Me.GridView1.Columns[1].Width
+  a = a - Me.GridView1.Columns[2].Width
+  a = a - Me.GridView1.Columns[3].Width
+  a = a - Me.GridView1.Columns[4].Width
+ ' Me.GridView1.Columns[5].Width = a - 2
+
+  'Menu popup
+  BarraMenu = New Menu(Me)
+
+  itemMenu = New Menu(BarraMenu) As "MenuDeshabilitar"
+  ItemMenu.text = "Deshabilitar"
+
+  itemMenu = New Menu(BarraMenu) As "MenuHabilitar"
+  ItemMenu.text = "Habilitar"
+
+  itemMenu = New Menu(BarraMenu) As "MenuEditar"
+  ItemMenu.text = "Modificar"
+
+  itemMenu = New Menu(BarraMenu) As "MenuProbar"
+  ItemMenu.text = "Probar comando"
+
+  itemMenu = New Menu(BarraMenu) As "MenuAgregar"
+  ItemMenu.text = "Agregar"
+
+  itemMenu = New Menu(BarraMenu) As "MenuEliminar"
+  ItemMenu.text = "Eliminar"
+
+  itemMenu = New Menu(BarraMenu) As "Menu_"
+  ItemMenu.text = ""
+
+  itemMenu = New Menu(BarraMenu) As "MenuAyuda"
+  ItemMenu.text = "Ayuda"
+
+
+
+
+  Mod1.LeerBaseDatos()
+  Form1.MostrarBaseDatos()
+   FMain.Show
+
+End
+
+
+Public Sub Timer1_Timer()
+  Dim LaHora, dia, resp As String
+  Dim i, d As Integer
+  'actualiza hora del reloj
+  LaHora = Format$(Time(Now), "hh:nn:ss")
+  LabelHora.Text = LaHora
+  d = WeekDay(Now)
+  If d = 0 Then dia = "domingo"
+  If d = 1 Then dia = "lunes"
+  If d = 2 Then dia = "martes"
+  If d = 3 Then dia = "miercoles"
+  If d = 4 Then dia = "jueves"
+  If d = 5 Then dia = "viernes"
+  If d = 6 Then dia = "sabado"
+  LabelDia.Text = dia & "\n" & Format$(Date(Now), "d mmmm")
+  
+  
+  
+  'buscar si hay eventos que ejecutar ahora
+  Me.GridView1.Rows.Count = global.dHabilitado.Length + 1
+  For i = 0 To global.dHabilitado.Length - 1
+      resp = Mod1.EsAhora(Str(global.dHora[i]) & ":" & Str(global.dMinuto[i]))
+      If resp = "Ahora" Then
+        
+        If global.dHabilitado[i] Then
+          If Mod1.EsElDia(global.dDias[i])
+          
+            If Not global.dHecho[i] Then
+              Mod1.EjecutarComando(global.dComando[i])
+              'ButtonBoxVideo.text = Me.GridView1[i + 1, 4].text
+               TextBoxEventos.Text = Me.GridView1[i + 1, 5].text    'ENVIAR EVENTO A TEXTBOX
+               ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+               TextLabel2.Text = "EVENTO"
+               ListBoxEventos.Add(TextBoxEventos.Text)
+              global.dHecho[i] = True
+              
+            Endif
+          Endif
+        Endif
+      Else
+        global.dHecho[i] = False
+      Endif
+      Me.GridView1[i + 1, 4].text = resp
+      
+  Next
+End
+
+
+
+Public Sub MostrarBaseDatos()
+  Dim x As Integer
+  Me.GridView1.Rows.Count = global.dHabilitado.Length + 1
+  For x = 0 To global.dHabilitado.Length - 1
+    If global.dHabilitado[x] Then
+      Me.GridView1[x + 1, 0].text = "Si"
+    Else
+      Me.GridView1[x + 1, 0].text = ""
+    Endif
+    Me.GridView1[x + 1, 1].text = Str(global.dHora[x]) & ":" & Str(global.dMinuto[x])
+    Me.GridView1[x + 1, 2].text = global.dDias[x]
+    Me.GridView1[x + 1, 3].text = global.dTitulo[x]
+    Me.GridView1[x + 1, 5].text = global.dComando[x]
+  Next
+End
+
+
+
+Public Sub GridView1_MouseUp()
+  Dim fila, datos As Integer
+  fila = GridView1.Row
+  datos = global.dHabilitado.Length
+  If fila > 0 And datos >= fila Then
+'    MenuEditar.Enabled = True
+'    MenuEliminar.Enabled = True
+  Else
+'    MenuEditar.Enabled = False
+'    MenuEliminar.Enabled = False
+  Endif
+End
+
+
+Public Sub botMenu_Click()
+    Dim h, v As Integer
+  h = Me.X + 200
+  v = Me.Y + 30
+  BarraMenu.Popup(h, v)
+End
+
+
+
+Public Sub MenuEditar_Click()
+  Dim fila, datos As Integer
+  Dim x As Integer = 0
+  Dim dias, Lu, Ma, Mi, Ju, Vi, Sa, Dom As String
+  fila = GridView1.Row
+  datos = global.dHabilitado.Length
+  If fila > 0 And datos >= fila Then
+
+  x = GridView1.Row - 1
+  Form2.TextBox1.Text = Str(global.dHora[x]) & ":" & Str(global.dMinuto[x])
+  Form2.TextTitulo.Text = global.dTitulo[x]
+  Form2.TextComando.Text = global.dComando[x]
+  dias = global.dDias[x]
+  Lu = UCase$(Mid(dias, 1, 1))
+  Ma = UCase$(Mid(dias, 2, 1))
+  Mi = UCase$(Mid(dias, 3, 1))
+  Ju = UCase$(Mid(dias, 4, 1))
+  Vi = UCase$(Mid(dias, 5, 1))
+  Sa = UCase$(Mid(dias, 6, 1))
+  Dom = UCase$(Mid(dias, 7, 1))
+  If Lu = "L" Then Form2.CheckBox1.Value = True Else Form2.CheckBox1.Value = False
+  If Ma = "M" Then Form2.CheckBox2.Value = True Else Form2.CheckBox2.Value = False
+  If Mi = "M" Then Form2.CheckBox3.Value = True Else Form2.CheckBox3.Value = False
+  If Ju = "J" Then Form2.CheckBox4.Value = True Else Form2.CheckBox4.Value = False
+  If Vi = "V" Then Form2.CheckBox5.Value = True Else Form2.CheckBox5.Value = False
+  If Sa = "S" Then Form2.CheckBox6.Value = True Else Form2.CheckBox6.Value = False
+  If Dom = "D" Then Form2.CheckBox7.Value = True Else Form2.CheckBox7.Value = False
+  If global.dHabilitado[x] Then
+    Form2.botSi.Enabled = False
+    Form2.botNo.Enabled = True
+    Form2.LabelEstado.Text = "Si ejecutar"
+  Else
+    Form2.botSi.Enabled = True
+    Form2.botNo.Enabled = False
+    Form2.LabelEstado.Text = "No, detenido"
+  Endif
+  
+  
+  Form2.Tag = x
+  Form2.ShowDialog
+  
+  Endif
+End
+
+
+
+
+Public Sub MenuAgregar_Click()
+  Form2.TextBox1.Text = "8:30"
+  Form2.TextTitulo.Text = "titulo"
+  Form2.TextComando.Text = "comando"
+  Form2.CheckBox1.Value = True
+  Form2.CheckBox2.Value = True
+  Form2.CheckBox3.Value = True
+  Form2.CheckBox4.Value = True
+  Form2.CheckBox5.Value = True
+  Form2.CheckBox6.Value = False
+  Form2.CheckBox7.Value = False
+  Form2.botSi.Enabled = True
+  Form2.botNo.Enabled = False
+  Form2.LabelEstado.Text = "No, detenido"
+  Form2.Tag = -1
+  Form2.ShowDialog
+End
+
+
+
+Public Sub MenuEliminar_Click()
+  Dim fila, datos As Integer
+  Dim x, r As Integer
+  Dim msg As String
+  fila = GridView1.Row
+  datos = global.dHabilitado.Length
+  If fila > 0 And datos >= fila Then
+    x = GridView1.Row - 1
+    msg = "<b>¿ Eliminar ?</b><br>" & Str(global.dHora[x]) & ":" & Str(global.dMinuto[x]) & "  "
+    msg = msg & global.dTitulo[x] & "<br><br><i>No se puede deshacer !</i>"
+    r = Message.Warning(msg, "Cancelar", "Eliminar", " No ")
+    If r = 2 Then
+      Mod1.EliminarDato(x)
+      Form1.MostrarBaseDatos()
+    Endif
+  Endif
+End
+
+
+Public Sub MenuProbar_Click()
+  Dim x, r As Integer
+  Dim msg As String
+  If GridView1.Row > 0 And global.dComando.Length >= GridView1.Row Then
+    x = GridView1.Row - 1
+    msg = "<b>Ejecutar</b> comando<br><br>" & Str(global.dComando[x])
+    r = Message.Question(msg, "Cancelar", "Ejecutar", " No ")
+    If r = 2 Then
+      Mod1.EjecutarComando(global.dComando[x])
+    Endif
+  Endif
+End
+
+Public Sub MenuHabilitar_Click()
+  Dim x As Integer
+  If GridView1.Row > 0 And global.dHabilitado.Length >= GridView1.Row Then
+    x = GridView1.Row - 1
+    global.dHabilitado[x] = True
+    Mod1.GrabarBaseDatos()
+    Mod1.LeerBaseDatos()
+    Form1.MostrarBaseDatos()
+  Endif
+End
+
+Public Sub MenuDeshabilitar_Click()
+  Dim x As Integer
+  If GridView1.Row > 0 And global.dHabilitado.Length >= GridView1.Row Then
+    x = GridView1.Row - 1
+    global.dHabilitado[x] = False
+    Mod1.GrabarBaseDatos()
+    Mod1.LeerBaseDatos()
+    Form1.MostrarBaseDatos()
+  Endif
+End
+
+
+
+Public Sub Form_Resize()
+  Dim alto, ancho, a As Integer
+  alto = Me.Height
+  ancho = Me.Width
+  alto = alto - Me.GridView1.Y
+  If alto > 10 Then
+    Me.GridView1.Height = alto
+  Else
+    Me.GridView1.Height = 0
+  Endif
+  Me.GridView1.Width = ancho
+  a = Me.Width
+  a = a - Me.GridView1.Columns[0].Width
+  a = a - Me.GridView1.Columns[1].Width
+  a = a - Me.GridView1.Columns[2].Width
+  a = a - Me.GridView1.Columns[3].Width
+  a = a - Me.GridView1.Columns[4].Width
+  Me.GridView1.Columns[5].Width = a - 2
+End
+
+
+Public Sub MenuAyuda_Click()
+  Form3.Show
+End
+
+
+Public Sub Form_Close()
+  If global.Udp1.Status > 0 Then Close global.Udp1
+  stopbtn_Click
+  Form2.Close
+  Form3.Close
+  FMain.Close
+   StopMovie
+End
+
+Public Sub playbtn_Click()
+
+  ' Inizializza la libreria VLC:
+  inst = libvlc_new(0, Null)
+  'Crea un nuevo objeto multimedia.
+'   ''En el segundo argumento de la función, se debe especificar la ruta del archivo de video
+'   ''o la url del video que se ejecutará directamente desde Internet:
+  If Not Exist(rutaReproducir) Then
+    'Message.Error(("Debe elegir un fichero para reproducir"))
+    'TimerPlaylist.Enabled = True
+  'ButtonPlay_Click
+    Return
+  Endif
+  '''''''''''''''''''''''''''''''''''''''''''
+reproduciendoVideo = False
+''''''''''''''''''''''''''''''''''''''''''''''
+If TextStatusPlay.Text = "STOP" Then
+  
+
+  m = libvlc_media_new_path(inst, rutaReproducir)
+
+  ' Crea un media player:
+  mp = libvlc_media_player_new_from_media(m)
+
+  ' Per far mostrare il video nella "DrawingArea", ricaviamo il suo identificativo:
+  id = DrawingArea1.Id
+  id = FMain.DrawingArea1.Id
+
+  ' Passiamo l'identificativo della finestra, nella quale dovrà essere mostrato il video:
+  libvlc_media_player_set_xwindow(mp, id)
+
+  ' Avvia l'esecuzione del file video da parte del media player:
+  libvlc_media_player_play(mp)
+  TextStatusPlay.Text = "PLAY"
+reproduciendoVideo = True
+  Do
+    TextLabelDuracion.Text = ("Duración: ") '& Str(Date(0, 0, 0, 0, 0, 0, libvlc_media_player_get_length(mp, 0)))
+    TextLabelReproduciendo.Text = ("Reproduciendo: ") '& Str(Date(0, 0, 0, 0, 0, 0, libvlc_media_player_get_time(mp)))
+    TextBox3.Text = Str(Date(0, 0, 0, 0, 0, 0, libvlc_media_player_get_length(mp, 0)))
+    TextBox4.Text = Str(Date(0, 0, 0, 0, 0, 0, libvlc_media_player_get_time(mp)))
+    Wait 0.01
+
+  Loop Until libvlc_media_player_get_state(mp) > libvlc_Paused
+'Loop Until ((reproduciendoVideo = True) Or (libvlc_media_player_get_state(mp) > libvlc_Playing))
+  Chiude()   'para cerrar vlc
+  timerplayfinal.Enabled = True   'INICIA NUEVAMENTE A REPRODUCIR
+  'timerplayfina.Enabled = True   'INICIA NUEVAMENTE A REPRODUCIR
+  TextStatusPlay.Text = "STOP"
+ ' If ListBoxPlaylist.index + 1 = ValueBox1.Value Then    'para regresar la lista al inicio
+' ListBoxPlaylist.Index = -1
+'TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+'TextLabel1.Text = "reiniciar lista"
+ ' Endif  
+  Endif
+  
+
+End
+
+Private Procedure Chiude()
+
+
+If Not IsNull(mp) Then
+    libvlc_media_player_stop(mp)
+    libvlc_release(inst)
+    reproduciendoVideo = False
+   FMain.DrawingArea1.Refresh()
+    TextLabel1.Text = "CLOSED"
+  Endif
+
+End
+
+
+Public Sub stopbtn_Click()
+
+inst = libvlc_new(0, Null)
+If Not Exist(rutaReproducir) Then
+    'Message.Error(("Debe elegir un fichero para reproducir"))
+    Endif 
+    If TextStatusPlay.Text = "PLAY" Then
+Chiude()
+  'reproduciendoVideo = False
+ FMain.DrawingArea1.Refresh()
+TextStatusPlay.Text = "STOP"
+Endif
+End
+
+Public Sub ButtonPause_Click()
+
+  If Not Exist(rutaReproducir) Then
+    'Message.Error(("Debe elegir un fichero para reproducir"))
+    ButtonPause.Value = - ButtonPause.Value
+    Return
+  Endif
+
+  If Not IsNull(mp) Then
+    libvlc_media_player_pause(mp)
+
+  Endif
+
+End
+
+
+
+Public Sub Button5_Click()
+Dim LaHora, dia, resp As String
+  Dim i, d As Integer
+        'ButtonBoxVideo.text = Me.GridView1[i + 1, 4].text
+        'ButtonBoxVideo.text = Me.GridView1[i + 1, 5].text
+        'rutaReproducir = ButtonBoxVideo.text
+        'Button1_Click
+
+End
+
+Public Sub Timer2_Timer()
+
+  rutaReproducir = TextBoxSiguiente.Text
+  stopbtn_Click
+  'playbtn_Click
+  ToolButton1_Click
+  timer2.Enabled = False
+        
+
+End
+
+Public Sub ListBoxPlaylist_Click()
+
+  
+
+End
+
+Public Sub ListBoxPlaylist_DblClick()
+
+  Dim a As Integer
+If ListBoxPlaylist.Index > 0 Then 'Verifica si el elemento agarrado es mayor que 0
+TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+Else If ListBoxPlaylist.Index = 0 Then 'Verifica si el elemento es igual a 0
+TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+Endif 
+TextBoxSiguiente.Text = TextBoxPlaylist.Text
+TimerPlaylist.Enabled = True
+End
+
+Public Sub Menu4_Click()
+
+  MenuAgregar_Click
+
+End
+
+Public Sub Menu3_Click()
+
+  MenuEditar_Click
+
+End
+
+Public Sub Menu1_Click()
+
+  MenuProbar_Click
+
+End
+
+Public Sub Menu2_Click()
+
+  MenuEliminar_Click
+
+End
+
+
+Public Sub Menu5_Click()
+
+  MenuHabilitar_Click
+
+End
+
+
+Public Sub ButtonDelEventos_Click()
+
+'   Dim a As Integer
+'If ListBoxEventos.Index > 0 Then 'Verifica si el elemento agarrado es mayor que 0
+'TextBoxEventos.Text = Trim(ListBoxEventos.Current.Text)
+'Else If ListBoxEventos.Index = 0 Then 'Verifica si el elemento es igual a 0
+'TextBoxEventos.Text = Trim(ListBoxEventos.Current.Text)
+'Endif 
+'TextBoxSiguiente.Text = TextBoxEventos.Text
+'TimerPlaylist.Enabled = True
+
+TextLabel2.Text = ListBoxEventos.Count
+TextLabel1.Text = ListBoxPlaylist.Count
+
+If ListBoxEventos.Count >= 1 Then 'si Count es mayor o igual a 1; eliminar item 0
+ListBoxEventos.Remove(0)
+Endif
+End
+
+Public Sub Eliminar_Click()
+ 
+ 'Dim a As Integer
+ ' If ListBox1.Index > 0 Then 'Verifica si el elemento agarrado es mayor que 0
+'ListBox1.Remove(ListBox1.Index) 'Elimina el elemento si es mayor que 0
+'Else If ListBox1.Index = 0 Then 'Verifica si el elemento es igual a 0
+'ListBox1.Remove(0) 'Elimina el Elemento 0
+'Endif 
+Dim C As Integer
+Dim CantidadItems As Integer 
+C = 0
+CantidadItems = ListBoxPlaylist.Index
+If CantidadItems >= 0 Then 
+ListBoxPlaylist.Remove(CantidadItems) 
+C = C + ListBoxPlaylist.Count
+Else 
+If ListBoxPlaylist.Count > 0 And CantidadItems = -1 Then 
+Message.Info("Debe seleccionar algo")
+ Endif 
+Endif
+
+End
+
+Public Sub ListBoxEventos_Click()
+
+
+End
+
+Public Sub Button1_Click()
+ Dim $inf As String
+  Dim j As Byte
+  Dim MultimediaFiles As String
+   If ListBoxPlaylist.Count > 0 Then ListBoxPlaylist.Clear
+   With Dialog
+     .Title = ("Abrir Multimedia...")
+     .Filter = ["*.avi;*.mp4;*.mpg;*.mov;*.vob;*.wmv;*.mkv;*.mpeg" "video"]
+   
+  If .OpenFile(True) Then Return
+  ListBoxPlaylist = .Paths
+  End With
+      numFile = 0
+      $inf = Null
+      caricamentoFile()
+  
+End
+
+Public Sub caricamentoFile()
+
+' Carica il file selezionato:
+  mplyr.URL = Media.URL(percorsi[numFile])
+  Button1.Enabled = True
+  TextLabel1.Text = File.Name(percorsi[numFile])
+  Menu6.Enabled = False
+' Il Menu7 viene abilitato soltanto se si è caricato un file Midi:
+  
+      
+  Button1.Foreground = Color.Black
+  mplyr.Stop
+
+End
+
+Public Sub addmulti_Click()   ''''''''ok
+Dim ruta As String
+ Dim MultimediaFiles As String
+ Dialog.Title = "Seleciona un file"
+ ruta = "/home/playme/media/"
+  Dialog.Filter = ["*.avi;*.mp4;*.mpg;*.mov;*.vob;*.wmv;*.mkv;*.mpeg" "video"]
+  If Dialog.OpenFile(True) Then Return
+  For Each MultimediaFiles In Dialog.Paths
+    Try ListBoxPlaylist.Add(MultimediaFiles)
+    If (ListBoxPlaylist.Count > 0) And (TextLabel1.Text = "CLOSED") Then
+   ' TimerPlaylist.Enabled = True
+    TimerPlaylist2.Enabled = True
+'TimerEstado.Enabled = True
+ListBoxPlaylist.index = 0 'ListBoxPlaylist.Index + 1
+TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+Endif
+Next
+Catch
+ Message.Info(Error.Text)
+End
+
+Public Sub Button7_Click()
+
+  Dim file1 As String
+Dim ruta As String
+ruta = "/home/expresion/" '(recuerda acabarlo con '/')
+For Each file1 In RDir(ruta, "*.*", gb.file) 'gb.file es para que te devuelva solo ficheros
+    With Stat(ruta & file1)
+      Message.Info(.Path) 'esto te devuelve la ruta completa del archivo
+      Message.Info(.size) 'el tamaño del archivo
+      Message.info(.Time) 'la fecha de modificación del fichero
+      'stat te puede devolver mucha más información, revisala
+    End With
+Next
+
+End
+
+Public Sub Button8_Click()
+
+   Dim $inf As String
+  Dim j As Byte
+  Dim MultimediaFiles As String
+   If ListBoxPlaylist.Count > 0 Then ListBoxPlaylist.Clear
+   With Dialog
+     .Title = ("Abrir Multimedia...")
+     .Filter = ["*.avi;*.mp4;*.mpg;*.mov;*.vob;*.wmv;*.mkv;*.mpeg" "video"]
+   
+  If .OpenFile(True) Then Return
+  ListBoxPlaylist.Add = .Paths
+  End With
+      numFile = 0
+      $inf = Null
+      caricamentoFile()
+
+End
+
+
+
+Public Sub timerplayfinal_Timer()
+ If checkcontinua.Value = True Then 
+      'checkcontinua.Value = True
+      ButtonPlay_Click
+      checkcontinua.Text = "AUTO"
+      TextBoxSiguiente.Text = Trim(ListBoxPlaylist.Current.Text)
+      'TextLabel2.Text = "AUTOMATICO"
+     ' timerplayfinal.Enabled = True
+     ' libvlc_media_player_stop(mp)
+     ' TextLabel1.Text = "TIMER ENABLE" 
+      Else
+      checkcontinua.Value = False 
+      checkcontinua.Text = "MANUAL"
+      'timerplayfinal.Enabled = False
+      'libvlc_media_player_stop(mp) 
+      ' TextLabel2.Text = "MANUAL"
+      Endif
+
+'ButtonPlay_Click
+
+End
+
+Public Sub checkcontinua_Click()
+
+If checkcontinua.Value Then 
+checkcontinua.Value = True
+checkcontinua.Text = "AUTO" 
+Else
+      checkcontinua.Value = False 
+      checkcontinua.Text = "MANUAL" 
+      Endif
+End
+
+Public Sub ButtonSTOP_Click()
+
+If Not IsNull(mp) Then
+    TextLabel1.Text = "STOP"
+    
+    'Deja de ejecutar el archivo de video:
+    libvlc_media_player_stop(mp)
+    'reproduciendoVideo = False
+    'Suelta y cierra el reproductor multimedia:
+    libvlc_media_player_release(mp)
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''  
+    'Cerrar la biblioteca de VLC:
+    libvlc_release(inst)
+   'reproduciendoVideo = True
+  '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
+    If checkcontinua.Value = True Then 
+      'checkcontinua.Value = True
+      checkcontinua.Text = "AUTO"
+      'TextLabel2.Text = "AUTOMATICO"
+     ' timerplayfinal.Enabled = True
+     ' libvlc_media_player_stop(mp)
+     ' TextLabel1.Text = "TIMER ENABLE" 
+      Else
+      checkcontinua.Value = False 
+      checkcontinua.Text = "MANUAL"
+      'timerplayfinal.Enabled = False
+      'libvlc_media_player_stop(mp) 
+      ' TextLabel2.Text = "MANUAL"
+      Endif
+      
+      
+      If TextLabel2.Text = "AUTOMATICO" Then
+      timerplayfinal.Enabled = True
+     libvlc_media_player_stop(mp)
+      TextLabel1.Text = "TIMER ENABLE"
+      Else 
+        TextLabel2.Text = "MANUAL"
+        timerplayfinal.Enabled = False
+        libvlc_media_player_stop(mp)
+        Endif
+       Else
+        
+       libvlc_media_player_stop(mp)
+       libvlc_release(inst)
+       FMain.DrawingArea1.Refresh()
+     
+       TextLabel1.Text = "STOP"
+       Endif
+      libvlc_media_player_stop(mp)
+
+End
+
+Public Sub btnPlay_Click()
+
+
+  If $hProcess Then
+    Print #$hProcess, " ";
+    btnPlay.Enabled = False
+    btnPause.Enabled = True
+    
+    'PRINT "CONTINUE"
+    Return
+  Endif
+
+  'txtAbout.Visible = False
+
+  With FMain.embPlayer
+    Form_Resize
+    .Show
+    .Enabled = False
+  '  '.Mouse = Mouse.Default
+  '  Form_Resize
+  '  '.Enabled = FALSE
+  End With
+
+  $bShow = True
+
+  '$hProcess = Exec ["mpv", "-wid", CStr(embPlayer.Handle), Conv$($sPath, Desktop.Charset, System.Charset)] For Input Output As "Process"
+$hProcess = Exec ["mplayer", "-wid", CStr(FMain.embPlayer.Handle), Conv$($sPath, Desktop.Charset, System.Charset)] For Input Output As "Process"
+
+  btnStop.Enabled = True
+  btnPlay.Enabled = False
+  btnPause.Enabled = True
+
+  'embPlayer.Hide
+  timShow.Enabled = True
+
+
+End
+
+Public Sub timMusic_Timer()
+  'TextBox1.Text = Trim(ListBox1.Current.Text)
+ 'TextBox1.Text = siguiente
+ 'ButtonBoxVideo.Text = TextBox1.Text
+  $sPath = TextBoxAire.text
+  StopMovie
+  btnPlay.Enabled = True
+  btnStop_Click
+  'btnPlay_Click
+  ButtonEvento_Click
+  'timMusic.Enabled = False
+
+End
+
+Public Sub btnPause_Click()
+
+   If Not $hProcess Then Return
+  Print #$hProcess, " ";
+  '$hProcess.Send(" ") '("pause\n")
+  btnPlay.Enabled = True
+  btnPause.Enabled = False
+  'PRINT "PAUSE"
+
+End
+
+Public Sub btnStop_Click()
+
+  If Not $hProcess Then Return
+  If $bQuit Then
+    $hProcess.Kill
+  Else
+    Print #$hProcess, "q";
+    $bQuit = True
+  Endif
+
+
+End
+
+Public Sub btnOpen_Click()
+
+   Dialog.Path = $sPath
+  If Dialog.OpenFile() Then Return
+  $sPath = Dialog.Path
+  
+  StopMovie
+  btnPlay.Enabled = True
+  btnPlay_Click
+
+End
+
+Public Sub txtAbout_MouseDown()
+
+  
+
+End
+
+Public Sub timShow_Timer()
+
+  FMain.embPlayer.Resize(1, 1)
+  FMain.embPlayer.Show
+  Form_Resize
+  timShow.Enabled = False
+
+End
+
+Private Sub StopMovie()
+
+  If Not $hProcess Then Return
+
+  $hProcess.Kill
+  'While $hProcess
+  '  Wait
+  'Wend
+
+End
+
+Public Sub Process_Kill()
+
+  $hProcess = Null
+  timShow.Enabled = False
+  $bQuit = False
+  $bShow = False
+  btnPause.Enabled = False
+  btnPlay.Enabled = True
+  btnStop.Enabled = False
+  FMain.embPlayer.Hide
+  'txtAbout.Show
+  'PRINT "STOP"
+
+End
+
+Public Sub Process_Read()
+  
+  Dim sData As String
+  
+  sData = Read #Last, -255
+  Print sData;
+  
+End
+
+
+
+Public Sub TabPanel1_Click()
+
+  
+
+End
+
+Public Sub TextBox2_KeyPress()
+Dim actualcan As String
+Dim actualc As String
+ actualcan = ListBoxPlaylist.Index
+  actualc = ListBoxPlaylist.Count
+  If ListBoxPlaylist.Current.Selected = -1 Then
+    TextBoxSiguiente.Text = (ListBoxPlaylist.Index)
+  Endif
+
+End
+
+Public Sub Button9_Click()
+
+ Dim actualcan As String
+Dim actualc As String
+
+If ListBoxPlaylist.Index = -1 Then
+    Message.Info("Seleccione una canción")
+    Return
+  Endif
+
+'  If Listbox1.Index = > 0 Then
+actualcan = ListBoxPlaylist.Index
+    'escucharCancion(GridViewCanciones[GridViewCanciones.row, 6].text) ' & "/" & GridViewCanciones[GridViewCanciones.row, 0].text)
+'  Else
+ '   Message.Info("Debe elegir un fichero de musica")
+ '   Return
+  'Endif
+    
+ actualcan = ListBoxPlaylist.Index
+  actualc = ListBoxPlaylist.Count
+  If ListBoxPlaylist.Current.Selected = -1 Then
+    TextBoxSiguiente.Text = (ListBoxPlaylist.Index)
+  Endif
+ 
+
+End
+
+Public Sub ListBoxEventos_DblClick()
+   Dim a As Integer
+If ListBoxEventos.Index > 0 Then 'Verifica si el elemento agarrado es mayor que 0
+TextBoxEventos.Text = Trim(ListBoxEventos.Current.Text)
+Else If ListBoxEventos.Index = 0 Then 'Verifica si el elemento es igual a 0
+TextBoxEventos.Text = Trim(ListBoxEventos.Current.Text)
+Endif 
+TextBoxSiguiente.Text = TextBoxEventos.Text
+TimerPlaylist.Enabled = True
+End
+
+Public Sub ButtonDirectorio_Click()
+
+  'Dim fileName As String
+
+  If Dialog.SelectDirectory() Then
+    ' [Martín 20160926]
+    AddFolder(Dialog.SelectDirectory)
+
+  Endif
+
+End
+Public Sub AddFolder(strPath As String) ' [Martín 20160926]
+
+  Dim fileName As String
+
+  For Each fileName In Dir(strPath)
+    'If InStr(filename, ".mp3") <> 0 Then
+    ' Lo cambie por este que me parece mas preciso por si las extensiones no son el minúsculas
+    If String.LCase(File.Ext(filename)) = "mp4" Then
+      agregarGrid(strPath &/ filename)
+    Endif
+  Next
+
+End
+
+Public Sub agregarGrid(ruta As String)
+
+  Dim stxMetadata As New String[]
+
+  GridViewCanciones.Rows.count += 1
+
+  stxMetadata = ExifSong(ruta)
+
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 0].text = stxMetadata[0]
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 1].text = stxMetadata[1]
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 2].text = stxMetadata[2]
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 3].text = stxMetadata[3]
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 4].text = stxMetadata[4]
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 5].text = stxMetadata[5]
+  GridViewCanciones[GridViewCanciones.Rows.count - 1, 6].text = ruta
+
+  GridViewCanciones.Refresh()
+
+End
+
+Private stxMark As New String[] ' [Martín 20160926]
+
+Public Function ExifSong(strFilePath As String) As String[] ' [Martín 20160926]
+  '' Funcion que devuelve una matriz con algunos metadatos de las pistas de sonido.
+
+  Dim intM As Integer
+  Dim strExifRaw As String
+  Dim stxExifRaw As New String[]
+  Dim intCursor As Integer
+  Dim intLen As Integer
+  Dim strExif As String
+  Dim stxExif As New String[]
+  Dim stxMetaTag As New String[]
+  Dim stxMetaDat As New String[]
+
+  Dim intK As Integer
+  Dim intKey As Integer
+
+  'Conjunto de archivos que pueden tener exif.
+  Shell "exiftool -f -s -s '" & strFilePath & "' 2>&1" To strExifRaw ' Toma todos los tags del archivo z es el numero de archivo de la lista
+
+  stxExifRaw = Split(strExifRaw, "\n")
+
+  For intM = 0 To stxExifRaw.Max ' - 1
+    If stxExifRaw[intM] <> "" Then
+
+      intCursor = InStr(stxExifRaw[intM], ": ")
+      intLen = String.Len(stxExifRaw[intM])
+      strExif = String.Mid(stxExifRaw[intM], 1, intCursor - 1) & "|" & String.Mid(stxExifRaw[intM], intCursor + 2, intLen - intCursor - 1)
+      stxMetaTag.Add(String.LCase(Split(strExif, "|")[0])) ' Lista de Tags, los titulos
+      stxMetaDat.Add(Split(strExif, "|")[1]) ' Lista de datos que se corresponden con cada tag
+
+    Endif
+  Next
+
+  For intK = 0 To stxMark.Max
+
+    intKey = stxMetaTag.Find(stxMark[intK])
+
+    If intKey <> -1 Then
+      stxExif.Add(stxMetaDat[intKey])
+    Else
+      stxExif.Add("")
+    Endif
+
+  Next
+
+  Return stxExif
+
+End
+
+Public Sub ToolButton1_Click()
+
+ButtonPlay_Click
+End
+
+Public Sub GridView1_Change()
+
+  
+
+End
+
+Public Sub TextLabel4_MouseDown()
+
+  
+
+End
+
+Public Sub ButtonPlay_Click()
+ Timerplayfinal.Enabled = False 
+If checkcontinua.Value Then 
+checkcontinua.Value = True
+TextLabel2.Text = "AUTO" 
+
+Else
+      checkcontinua.Value = False 
+      TextLabel2.Text = "MANUAL" 
+      Endif
+If ValueBox1.Value = ListBoxPlaylist.count Then
+  
+Endif
+TextLabel1.Text = "reproduciendo"
+'TimerPlaylist.Enabled = True
+TimerPlaylist2.Enabled = True
+End
+
+Public Sub ListBoxPlaylist_Select()
+
+  Dim resultado As String 
+  resultado = Trim(ListBoxPlaylist.Text)
+  TextLabel2.Text = resultado & " FUE SELECCIONADO"
+
+End
+
+Public Sub ButtonEvento_Click()
+timMusic.Enabled = False
+'TextBox5.Text = TextBox5.Text
+  $sPath = TextBoxAire.Text
+  StopMovie
+  
+  btnPlay.Enabled = True
+  btnPlay_Click
+End
+
+Public Sub Button11_Click()
+'reproduciendoVideo = False
+FMain.DrawingArea1.Visible = True
+'If $hProcess Then
+ ' Print #$hProcess, " ";
+  'TextBox6.Text = $hProcess.text
+'Endif
+End
+
+Public Sub ButtonAddEvento_Click()
+ 'ListBoxEventos.Add(TextBoxEventos.Text)
+ 'ListBoxEventos.SelectAll
+ Dim ruta As String
+ Dim MultimediaFiles As String
+ Dialog.Title = "Seleciona un file"
+ ruta = "/home/playme/media/"
+  Dialog.Filter = ["*.avi;*.mp4;*.mpg;*.mov;*.vob;*.wmv;*.mkv;*.mpeg" "video"]
+  If Dialog.OpenFile(True) Then Return
+  For Each MultimediaFiles In Dialog.Paths
+    Try ListBoxEventos.Add(MultimediaFiles)
+    If (ListBoxEventos.Count > 0) And (TextLabel1.Text = "CLOSED") Then
+      'ListBoxPlaylist.Value = 1
+      'ListBoxEventos.Text = ListBoxEventos.Current.Text
+    TimerPlaylist.Enabled = True
+    'TimerEstado.Enabled = True
+    
+     'f (ListBoxPlaylist.Count > 0) And (TextLabel1.Text = "CLOSED") Then
+    'TimerPlaylist.Enabled = True
+Endif
+Next
+Catch
+ Message.Info(Error.Text)
+End
+
+Public Sub TextBoxEventos_KeyPress()
+
+  
+
+End
+
+Public Sub ButtonPantFull_Click()
+
+TextLabel2.Text = ListBoxEventos.Index
+TextLabel1.Text = ListBoxPlaylist.Index
+
+FMain.Button1_Click
+
+
+End
+
+Public Sub ButtonMedia_Click()
+Dim sVideoToRun As String
+
+'pantalla.MediaViewVideo.URL = Media.URL(FileChooser1.SelectedPath)  'The 'FileChooser1.SelectedPath' is the file you selected. You need to put the file path through 'Media.URL' which converts it to a URL so that 'MediaView1.URL' is read as a URL
+'pantalla.MediaViewVideo.URL = Media.URL(FileChooser1.SelectedPath)
+'pantalla.MediaViewVideo.URL = Media.URL(TextBoxAire.Text)
+'pantalla.MediaViewVideo.Play
+'bRunVideo = True
+
+'If bRunVideo Then 
+ ' MediaView1.Border = False                                                   'MediaView border - turn it off
+ ' MediaView1.ShowControl = False 
+  'HBoxControls.Visible = False  
+ ' sVideoToRun = TextBoxAire.Text
+  'pantalla.MediaViewVideo.URL = /                                                         'If a video was selected (The Open button was clicked)
+  'pantalla.MediaViewVideo.URL = Media.URL(TextBoxAire.Text)                                    'Convert the video's file name into the URL required by MediaView.URL
+ ' Try pantalla.MediaViewVideo.Play                                                         'Try and play the video
+ ' If Error Then Message.Error("This file failed to run", "OK")                'If it wont play!
+  'bRunVideo = False                                                           'Reset bRunVideo for next time
+'Endif
+End
+
+Public Sub Button6_Click()
+FMain.MediaViewVideo.Show
+  'pantalla.MediaViewVideo.Hide = False
+FMain.MediaViewVideo.URL = Media.URL(TextBoxAire.Text)
+FMain.MediaViewVideo.Play
+
+End
+
+Public Sub stopbtn2_Click()
+
+FMain.MediaViewVideo.Hide
+FMain.MediaViewVideo.Stop
+
+End
+
+Public Sub ButtonPause2_Click()
+
+'pantalla.MediaViewVideo.Hide
+FMain.MediaViewVideo.Pause
+
+End
+
+Public Sub TimerPlaylist_Timer()
+
+  ValueBox3.Value = ListBoxPlaylist.Count
+ValueBox4.Value = ListBoxPlaylist.index
+ ValueBox5.Value = ListBoxPlaylist.Current.Text
+ TextBox2.Text = (ListBoxPlaylist.index + 1)  'Para corregir #index
+   If ListBoxEventos.Count >= 1 Then
+     TextBoxSiguiente.Text = TextBoxEventos.Text
+     If ListBoxEventos.Index = -1 Then
+     ListBoxEventos.index = ListBoxEventos.Index + 1
+     TextBoxSiguiente.Text = Trim(ListBoxEventos.Current.Text)
+     Endif
+     ButtonDelEventos_Click
+     TextBox13.Text = "reproducir el evento" 
+     Else
+     
+   If ListBoxPlaylist.Count >= 1 Then
+     TextBoxSiguiente.Text = TextBoxPlaylist.Text   'Trim(ListBoxPlaylist.Current.Text)
+     ListBoxPlaylist.index = ListBoxPlaylist.Index + 1
+     TextBox13.Text = "siguiente tema"
+     'TextBoxSiguiente.Text = Trim(ListBoxPlaylist.Current.Text)
+     TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+    Else
+   If ListBoxPlaylist.Index = -1 Then
+         ListBoxPlaylist.index = ListBoxPlaylist.Index + 1
+         TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+         TextBox13.Text = "iniciando tema"
+         'TextBoxSiguiente.Text = Trim(ListBoxPlaylist.Current.Text)
+          Endif
+   Endif
+   If TextBox2.Text = ListBoxPlaylist.Count Then   'REGRESA LA LISTA AL PRIMERO
+         ListBoxPlaylist.Index = 0
+         TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)      
+         TextBox13.Text = "reiniciando de la lista"
+       Endif 
+       Endif  
+  TextBoxAire.Text = TextBoxSiguiente.Text
+  rutaReproducir = TextBoxAire.text
+  TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+  TextBoxEventos.Text = Trim(ListBoxEventos.Current.Text)
+  stopbtn_Click
+  playbtn_Click
+ TimerPlaylist2.Enabled = False     
+
+End
+
+Public Sub TimerEstado_Timer()
+'TextBox5.Text = ListBoxPlaylist.Current.Text
+'TextBoxSiguiente.Text = Trim(ListBoxPlaylist.Current.Text)
+'TextBoxAire.Text = TextBoxSiguiente.Text   
+'TextBox7.Text = ListBoxEventos.Index
+'TextBox8.Text = Trim(ListBoxEventos.Current.Text)
+End
+
+Public Sub TimerPlaylist2_Timer()
+ValueBox3.Value = ListBoxPlaylist.Count
+ValueBox4.Value = ListBoxPlaylist.index
+ ValueBox5.Value = ListBoxPlaylist.Current.Text
+ TextBox2.Text = (ListBoxPlaylist.index + 1)  'Para corregir #index
+   If ListBoxEventos.Count >= 1 Then
+     TextBoxSiguiente.Text = TextBoxEventos.Text
+     If ListBoxEventos.Index = -1 Then
+     ListBoxEventos.index = ListBoxEventos.Index + 1
+     TextBoxSiguiente.Text = Trim(ListBoxEventos.Current.Text)
+     Endif
+     ButtonDelEventos_Click
+     TextBox13.Text = "reproducir el evento" 
+     Else
+     
+   If ListBoxPlaylist.Count >= 1 Then
+     TextBoxSiguiente.Text = TextBoxPlaylist.Text   'Trim(ListBoxPlaylist.Current.Text)
+     ListBoxPlaylist.index = ListBoxPlaylist.Index + 1
+     TextBox13.Text = "siguiente tema"
+     'TextBoxSiguiente.Text = Trim(ListBoxPlaylist.Current.Text)
+     TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+    Else
+   If ListBoxPlaylist.Index = -1 Then
+         ListBoxPlaylist.index = ListBoxPlaylist.Index + 1
+         TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+         TextBox13.Text = "iniciando tema"
+         'TextBoxSiguiente.Text = Trim(ListBoxPlaylist.Current.Text)
+          Endif
+   Endif
+   If TextBox2.Text = ListBoxPlaylist.Count Then   'REGRESA LA LISTA AL PRIMERO
+         ListBoxPlaylist.Index = 0
+         TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)      
+         TextBox13.Text = "reiniciando de la lista"
+       Endif 
+       Endif  
+  TextBoxAire.Text = TextBoxSiguiente.Text
+  rutaReproducir = TextBoxAire.text
+  TextBoxPlaylist.Text = Trim(ListBoxPlaylist.Current.Text)
+  TextBoxEventos.Text = Trim(ListBoxEventos.Current.Text)
+  stopbtn_Click
+  playbtn_Click
+ TimerPlaylist2.Enabled = False     
+
+End
+
+Public Sub ButtonLogo_Click()
+
+  If FMain.PictureLogo.Visible Then 
+FMain.PictureLogo.Visible = True
+'checkcontinua.Text = "AUTO" 
+Else
+      FMain.PictureLogo.Visible = False 
+      'checkcontinua.Text = "MANUAL" 
+      Endif
+
+End

@@ -1,0 +1,143 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,85,68)
+  Background = Color.Background
+  Foreground = &H000000&
+  Icon = Picture["wall-clock.png"]
+  Stacking = Window.Above
+  Spacing = True
+  { botCancelar Button
+    MoveScaled(14,50,20,6)
+    Font = Font["+1"]
+    Text = ("Cancelar")
+    Default = True
+    Cancel = True
+  }
+  { botGrabar Button
+    MoveScaled(50,50,18,6)
+    Font = Font["+1"]
+    Text = ("Grabar")
+  }
+  { !CheckBox1 CheckBox
+    MoveScaled(29,1,21,3)
+    #Public = True
+    Text = ("Lunes")
+  }
+  { !CheckBox2 CheckBox
+    MoveScaled(29,4,21,3)
+    #Public = True
+    Text = ("Martes")
+  }
+  { !CheckBox3 CheckBox
+    MoveScaled(29,7,21,3)
+    #Public = True
+    Text = ("Miercoles")
+  }
+  { !CheckBox4 CheckBox
+    MoveScaled(29,10,21,3)
+    #Public = True
+    Text = ("Jueves")
+  }
+  { !CheckBox5 CheckBox
+    MoveScaled(29,13,21,3)
+    #Public = True
+    Text = ("Viernes")
+  }
+  { !CheckBox6 CheckBox
+    MoveScaled(29,16,21,3)
+    #Public = True
+    Text = ("Sabado")
+  }
+  { !CheckBox7 CheckBox
+    MoveScaled(29,19,21,3)
+    #Public = True
+    Text = ("Domingo")
+  }
+  { !TextTitulo TextBox
+    MoveScaled(1,27,83,4)
+    #Public = True
+    Font = Font["Bold"]
+    Background = &HDFDFDF&
+    Foreground = &H00005F&
+    Alignment = Align.Left
+  }
+  { !TextComando TextArea
+    MoveScaled(1,35,83,4)
+    #Public = True
+    Font = Font["Bold,+1"]
+    Background = &HFFFFFF&
+    Foreground = &H00007F&
+    Alignment = Align.Left
+    ScrollBar = Scroll.Horizontal
+  }
+  { !botSi Button
+    MoveScaled(2,16,16,4)
+    #Public = True
+    Text = ("Habilitar")
+  }
+  { !botNo Button
+    MoveScaled(2,8,16,4)
+    #Public = True
+    Text = ("Parar")
+  }
+  { !LabelEstado Label
+    MoveScaled(4,12,22,4)
+    #Public = True
+    Font = Font["Bold,+1"]
+    Alignment = Align.Left
+  }
+  { !TextBox1 TextBox
+    MoveScaled(2,1,17,5)
+    #Public = True
+    Font = Font["DejaVu Sans Mono,+4"]
+    Background = &HFFFFFF&
+    Foreground = &H00007F&
+  }
+  { botProbarComando Button
+    MoveScaled(34,50,16,6)
+    Font = Font["+1"]
+    Text = ("Probar")
+  }
+  { Label1 Label
+    MoveScaled(1,24,49,2)
+    Text = ("Nombre a visualizar:")
+  }
+  { botAyuda Button
+    MoveScaled(115,5,14,5)
+    Font = Font["+1"]
+    Text = ("Ayuda")
+  }
+  { Label2 Label
+    MoveScaled(1,32,26,2)
+    Text = ("Comando a ejecutar:")
+  }
+  { FileView1 FileView
+    MoveScaled(88,11,41,56)
+  }
+  { Button1 Button
+    MoveScaled(68,50,16,6)
+    Text = ("AGREGAR")
+  }
+  { !ButtonBoxVideo ButtonBox
+    MoveScaled(1,44,83,4)
+    #Public = True
+    Drop = True
+  }
+  { Label3d Label
+    MoveScaled(32,40,24,4)
+    Visible = False
+  }
+  { Label3 Label
+    MoveScaled(2,61,60,4)
+    Text = (" ")
+  }
+  { Label4 Label
+    MoveScaled(45,23,36,3)
+    Text = (" ")
+  }
+  { Label5 Label
+    MoveScaled(1,40,24,4)
+    Text = ("Archivo a añadir:")
+  }
+}

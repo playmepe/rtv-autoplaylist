@@ -1,0 +1,160 @@
+' Gambas class file
+
+Private reproduciendoVideo As Boolean = False
+Private rutaReproducir As String
+Public TextLabel1 As New TextLabel(Form2)
+'Public Label3 As New Label(Form2)
+
+
+Public Sub Form_Open()
+  Dim t As String
+  Me.TextLabel1.X = 330
+  Me.TextLabel1.Y = 10
+  Me.TextLabel1.Height = 200
+  Me.TextLabel1.Width = 500
+  t = "Tipos de comando:<br><br>"
+  t = t & "<tt><font color='blue'>programa opciones</font></tt><br>Ejecuta la aplicacion<br><br>"
+  t = t & "<tt><font color='blue'><b>play</b> <i>musica.ogg</i></font></tt><br>Reproduce el sonido<br><br>"
+  t = t & "<tt><font color='blue'><b>udp/ip/port/</b><i>mensaje de texto</i></font></tt><br> Envia mensaje a la red"
+  
+  'Me.TextLabel1.Text = t
+  'Me.Label4.Text = t
+
+  Me.Label3d.Alignment = 2
+  Me.Label3d.Height = 28
+  Me.Label3d.Width = 550
+  Me.Label3d.X = 35
+  Me.Label3d.Y = 336
+  Me.Label3.Text = "se guarda en:  " & global.ArchivoDatos  
+End
+
+
+
+Public Sub Run() As Boolean
+  Return Not Me.ShowModal()
+End
+
+
+Public Sub botGrabar_Click()
+  Dim h, m As Integer
+  Dim dias As String
+  Dim tex As String[]
+  Dim hora As Date
+  Dim habilitado As Boolean
+  If IsDate(Me.TextBox1.Text) And InStr(Me.TextBox1.Text, ":") > 0 Then
+    hora = Time(CDate(Me.TextBox1.Text))
+    tex = Split(Me.TextBox1.Text, ":")
+    h = CInt(tex[0])
+    m = CInt(tex[1])
+    If Len(Me.TextTitulo.Text) > 2 Then
+      If Len(Me.TextComando.Text) > 2 Then
+        If CheckBox1.Value Or CheckBox2.Value Or CheckBox3.Value Or 
+        CheckBox4.Value Or CheckBox5.Value Or CheckBox6.Value Or CheckBox7.Value Then
+          If CheckBox1.Value Then dias = "l" Else dias = "."
+          If CheckBox2.Value Then dias = dias & "m" Else dias = dias & "."
+          If CheckBox3.Value Then dias = dias & "m" Else dias = dias & "."
+          If CheckBox4.Value Then dias = dias & "j" Else dias = dias & "."
+          If CheckBox5.Value Then dias = dias & "v" Else dias = dias & "."
+          If CheckBox6.Value Then dias = dias & "s" Else dias = dias & "."
+          If CheckBox7.Value Then dias = dias & "d" Else dias = dias & "."
+          If Me.botNo.Enabled Then
+            habilitado = True
+          Else
+            habilitado = False
+          Endif
+          If Me.Tag >= 0 Then
+            global.dHabilitado[Me.Tag] = habilitado
+            global.dDias[Me.Tag] = dias
+            global.dHora[Me.Tag] = h
+            global.dMinuto[Me.Tag] = m
+            global.dTitulo[Me.Tag] = Me.TextTitulo.Text
+            global.dComando[Me.Tag] = Me.TextComando.Text
+          Else
+            If Me.Tag = -1 Then
+              global.dHabilitado.Add(habilitado)
+              global.dDias.Add(dias)
+              global.dHora.Add(h)
+              global.dMinuto.Add(m)
+              global.dTitulo.Add(Me.TextTitulo.Text)
+              global.dComando.Add(Me.TextComando.Text)
+              global.dHecho.Add(False)
+            Endif
+          Endif
+          If Me.Tag >= -1 Then
+            Mod1.GrabarBaseDatos()
+            Mod1.LeerBaseDatos()
+            Form1.MostrarBaseDatos()
+          Endif
+          Me.tag = -9
+          Me.Close
+        Else
+          Message.Warning("Seleccionar que dias")
+        Endif
+      Else
+        Message.Warning("Falta el comando")
+      Endif
+    Else
+      Message.Warning("Falta el titulo")
+    Endif
+  Else
+    Message.Warning("hora no valida")
+  Endif
+End
+
+
+Public Sub botCancelar_Click()
+  Me.tag = -1
+  Me.Close
+End
+
+
+
+Public Sub botSi_Click()
+    Form2.botSi.Enabled = False
+    Form2.botNo.Enabled = True
+    Form2.LabelEstado.Text = "habilitado"
+End
+
+
+Public Sub botNo_Click()
+    Form2.botSi.Enabled = True
+    Form2.botNo.Enabled = False
+    Form2.LabelEstado.Text = "Detenido"
+End
+
+
+Public Sub botProbarComando_Click()
+  Mod1.EjecutarComando(Me.TextComando.text)
+End
+
+
+
+Public Sub botAyuda_Click()
+  Form3.Show
+End
+
+
+
+Public Sub Button1_Click()
+
+    Dialog.Filter = ["*.avi;*.mp4;*.mpg;*.mov;*.vob;*.wmv", "video"]
+
+  If Not Dialog.OpenFile() Then
+    rutaReproducir = Dialog.Path
+    ButtonBoxVideo.text = rutaReproducir
+    Me.TextComando.text = rutaReproducir
+  Endif
+
+End
+
+Public Sub ButtonBoxVideo_Click()
+
+  
+
+End
+
+Public Sub Label1_MouseDown()
+
+  
+
+End

@@ -1,0 +1,268 @@
+' Gambas module file
+
+
+Public Sub EjecutarComando(comando As String)
+  Dim sComan, inicio, sonido, ipDestino, msg As String
+  Dim parte, num As String[]
+  Dim puertoDestino, n1, n2, n3, n4 As Integer
+  sComan = Trim(comando)
+  inicio = Mid(LCase(sComan), 1, 4)
+  
+  If inicio = "udp/" Then
+      'si comando comienza con 'udp/' enviar mensaje por la red
+      parte = Split(sComan, "/")
+      If parte.Count > 3 Then
+        If IsInteger(parte[2]) Then 
+          puertoDestino = CInt(parte[2])
+          If puertoDestino > 1024 And puertoDestino < 65534 Then
+            ipDestino = parte[1]
+            num = Split(ipDestino, ".")
+            If num.Count > 3 Then
+              If IsInteger(num[0]) Then n1 = CInt(num[0]) Else n1 = -1
+              If IsInteger(num[1]) Then n2 = CInt(num[1]) Else n2 = -1
+              If IsInteger(num[2]) Then n3 = CInt(num[2]) Else n3 = -1
+              If IsInteger(num[3]) Then n4 = CInt(num[3]) Else n4 = -1
+              If n1 > 0 And n1 < 255 And n2 >= 0 And n2 < 255 And n3 >= 0 And n3 < 255 And n4 >= 0 And n4 < 255 Then
+                  msg = parte[3]
+                  global.Udp1.TargetHost = ipDestino
+                  global.Udp1.TargetPort = puertoDestino
+                  Try
+                    global.Udp1.Begin
+                    Write #global.Udp1, msg, Len(msg)
+                    global.Udp1.Send()
+                  If Error Then
+                    Debug Error.text
+                  Endif
+              Endif
+            Endif
+          Endif
+        Endif
+      Endif
+  Endif
+  
+  If inicio = "play" Then
+      'si comando comienza con 'play' reproducir sonido
+      sonido = Mid(sComan, 5)
+      sonido = Trim(sonido)
+      Debug "reproducir sonido ' & sonido & " '"
+      'Try
+        'Music.Load(sonido)
+        'Music.Play(1)
+      If Error Then
+        Debug Error.text
+      Endif
+  Endif
+  
+  If (inicio <> "udp/") And (inicio <> "play") And (Len(sComan) > 2) Then
+      sComan = sComan & " &"
+      Debug "ejecutar '" & sComan & "'"
+      Shell sComan
+  Endif
+End
+
+
+
+Public Function EsAhora(TextoHora As String) As String
+  'devuelve "Ahora" si es la hora indicada
+  'de lo contrario devuelve cuantas horas y minutos faltan
+  Dim hora, fecha As Date
+  Dim horas, minutos As Integer
+  Dim resp As String
+  If IsDate(TextoHora) Then
+    hora = Time(CDate(TextoHora)) + (1 / (24 * 60))
+    If hora < Time(Now) Then
+      fecha = Date(Now) + 1
+      fecha = fecha + hora
+    Else  
+      fecha = Date(Now)
+      fecha = fecha + hora
+    Endif
+'    dias = DateDiff(Now, Fecha, gb.Day)
+    horas = DateDiff(Now, Fecha, gb.Hour)
+    minutos = DateDiff(Now, Fecha, gb.Minute)
+'    horas = horas - (dias * 24)
+'    minutos = minutos - (dias * 24 * 60) - (horas * 60)
+    minutos = minutos - (horas * 60)
+'    If dias = 0 And horas = 0 And minutos = 0 Then
+    If horas = 0 And minutos = 0 Then
+      resp = "Ahora"
+    Else
+'      resp = "Faltan "
+'      If dias > 0 Then
+'       resp = resp & Str$(dias) & " dias "
+'      Endif
+'      If horas > 0 Then
+'       resp = resp & Str$(horas) & " horas "
+'      Endif
+'      resp = resp & Str$(minutos) & " minutos "
+      resp = Str$(horas) & ":" & Str$(minutos)
+    Endif
+    Return resp
+  Else
+    Return "hora no valida"
+  Endif
+End
+
+
+Public Function EsElDia(dias As String) As Boolean
+  Dim Lu, Ma, Mi, Ju, Vi, Sa, Dom As String
+  Dim d As Integer
+  Lu = UCase$(Mid(dias, 1, 1))
+  Ma = UCase$(Mid(dias, 2, 1))
+  Mi = UCase$(Mid(dias, 3, 1))
+  Ju = UCase$(Mid(dias, 4, 1))
+  Vi = UCase$(Mid(dias, 5, 1))
+  Sa = UCase$(Mid(dias, 6, 1))
+  Dom = UCase$(Mid(dias, 7, 1))
+  d = WeekDay(Now)
+  If d = 0 Then 'domingo
+      If Dom = "D" Then Return True Else Return False
+  Endif
+  If d = 1 Then 'lunes
+      If Lu = "L" Then Return True Else Return False
+  Endif
+  If d = 2 Then 'martes
+      If Ma = "M" Then Return True Else Return False
+  Endif
+  If d = 3 Then 'miercoles
+      If Mi = "M" Then Return True Else Return False
+  Endif
+  If d = 4 Then 'jueves
+      If Ju = "J" Then Return True Else Return False
+  Endif
+  If d = 5 Then 'viernes
+      If Vi = "V" Then Return True Else Return False
+  Endif
+  If d = 6 Then 'sabado
+      If Sa = "S" Then Return True Else Return False
+  Endif
+End
+
+
+
+Public Sub LeerBaseDatos()
+  'Base de datos:
+  'dHabilitado As Boolean
+  'dHora As Integer
+  'dMinuto As Integer
+  'dDias As String
+  'dTitulo As String
+  'dComando As String
+  'dHecho As Boolean
+  Dim Arch As File
+  Dim sLinea As String
+  Dim campo As String[]
+  Dim e, h, m, d, t, c As String
+ If Access(global.ArchivoDatos, gb.Read)
+    'borrar datos antiguos, si habian
+    global.dHabilitado.Clear
+    global.dHora.Clear
+    global.dMinuto.Clear
+    global.dDias.Clear
+    global.dTitulo.Clear
+    global.dComando.Clear
+    global.dHecho.Clear
+    Arch = Open global.ArchivoDatos For Input
+    While Not Eof(Arch)
+        Line Input #Arch, sLinea
+        campo = Split(sLinea, ";")
+        If campo.Count > 5 Then
+          e = campo[0]
+          h = campo[1]
+          m = campo[2]
+          d = campo[3]
+          t = campo[4]
+          c = campo[5]
+          If e = "1" Then global.dHabilitado.Add(True) Else global.dHabilitado.Add(False)
+          If IsInteger(h) Then global.dHora.Add(CInteger(h)) Else global.dHora.Add(0)
+          If IsInteger(m) Then global.dMinuto.Add(CInteger(m)) Else global.dMinuto.Add(0)
+          If Len(d) = 7 Then global.dDias.Add(d) Else global.dDias.Add("lmmjvsd")
+          If Left(t) = "\"" Then t = Mid(t, 2)
+          If Right(t) = "\"" Then t = Mid(t, 1, -1)
+          global.dTitulo.Add(t)
+          If Left(c) = "\"" Then c = Mid(c, 2)
+          If Right(c) = "\"" Then c = Mid(c, 1, -1)
+          global.dComando.Add(c)
+          global.dHecho.Add(False)
+        Endif
+    Wend
+    Close #Arch
+  Else
+    Message("no se puede leer de\n" & global.ArchivoDatos)
+  Endif
+End
+
+
+Public Sub GrabarBaseDatos()
+  'Base de datos:
+  'dHabilitado As Boolean
+  'dHora As Integer
+  'dMinuto As Integer
+  'dDias As String
+  'dTitulo As String
+  'dComando As String
+  Dim i As Integer
+  Dim Arch As File
+  Dim t As String
+  If Not Exist(global.ArchivoDatos) Then
+    Arch = Open global.ArchivoDatos For Write Create
+    Write #Arch, ""
+    Close #Arch
+  Endif
+  t = "Datos programador horario:\n"
+  For i = 0 To global.dHabilitado.Length - 1
+      If global.dHabilitado[i] = True Then
+        t = t & "1;"
+      Else
+        t = t & "0;"
+      Endif
+      t = t & Str(global.dHora[i]) & ";"
+      t = t & Str(global.dMinuto[i]) & ";"
+      t = t & global.dDias[i] & ";"
+      t = t & "\"" & global.dTitulo[i] & "\";"
+      t = t & "\"" & global.dComando[i] & "\"\n"
+  Next
+  If Access(global.ArchivoDatos, gb.write)
+    Arch = Open global.ArchivoDatos For Write Create
+    Write #Arch, t
+    Close #Arch
+  Else
+    Message("no se puede escribir en\n" & global.ArchivoDatos)
+  Endif
+End
+
+
+Public Sub EliminarDato(x As Integer)
+  global.dHabilitado.Delete(x)
+  global.dHora.Delete(x)
+  global.dMinuto.Delete(x)
+  global.dDias.Delete(x)
+  global.dTitulo.Delete(x)
+  global.dComando.Delete(x)
+  global.dHecho.Delete(x)
+  GrabarBaseDatos()
+  LeerBaseDatos()
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

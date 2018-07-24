@@ -1,0 +1,56 @@
+' Gambas class file
+
+Public MiTextLabel As New TextLabel(Form3)
+
+
+Public Sub Form_Open()
+  Dim t As String
+  MiTextLabel.Top = 10
+  MiTextLabel.Left = 10
+  MiTextLabel.Height = Form3.Height - 20
+  MiTextLabel.Width = Form3.Width - 20
+  MiTextLabel.Enabled = True
+  MiTextLabel.Visible = True
+  MiTextLabel.Foreground = &H000000& 'texto negro
+  MiTextLabel.Background = &HDFDFDF& 'fondo gris claro
+
+  t = "<b><i>Programador Horario</i></b> permite programar acciones (<i>comandos</i>)"
+  t = t & " que se ejecutaran automaticamente, cada semana, en los dias y horas programados."
+  t = t & "<br><br>Algunos ejemplos de comandos:<br><br>"
+
+  t = t & "<tt><font color='blue'>thunar ~/ </font></tt><br>"
+  t = t & "Abre el administrador de archivos <b>Thunar</b> en la carpeta del usuario.<br><br>"
+
+  t = t & "<tt><font color='blue'>vlc  http://mozart.usm.cl:8000/ </font></tt><br>"
+  t = t & "Abre el reproductor <b>VLC</b> y pone la musica, de la radio usm por internet.<br><br>"
+
+  t = t & "<tt><font color='blue'>firefox https://news.google.com </font></tt><br>"
+  t = t & "Abre el navegador <b>Firefox</b> en la pagina de noticias.<br><br>"
+
+  t = t & "<tt><font color='blue'><b>play</b> musica.mp3</font></tt><br>"
+  t = t & "Reproduse el sonido de <i>musica.mp3</i><br><br>"
+
+  t = t & "<tt><font color='blue'>sh ~/miProgramaBash.sh </font></tt><br>"
+  t = t & "Ejecuta el programa <b>miProgramaBash.</b>sh en la carpeta del usuario<br><br>"
+
+  t = t & "<tt><font color='blue'>python3 ~/Domotica/miProgPython.py </font></tt><br>"
+  t = t & "Ejecuta el programa <b>miProgPython.</b>py en dentro de la carpeta 'Domotica' del usuario<br><br>"
+
+  t = t & "<tt><font color='blue'><b>udp/192.168.0.72/3574/</b><i>mensaje de texto</i> </font></tt><br>"
+  t = t & "Envia a la red, con destino a ip=192.168.0.72 puerto=3574, el texto como un socket udp.<br><br>"
+
+  t = t & "<br><i>Programador Horario</i> es parte de mi proyecto <b>Domotica Libre</b>.<br>Autor Rolf Dahlskog Stade."
+
+
+
+  MiTextLabel.Text = t
+  
+End
+
+
+Public Sub Form_Resize()
+  Me.MiTextLabel.Top = 10
+  Me.MiTextLabel.Left = 10
+  Me.MiTextLabel.Height = Form3.Height - 20
+  Me.MiTextLabel.Width = Form3.Width - 20
+End

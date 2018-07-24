@@ -1,0 +1,26 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(100,0,35,16)
+  Tracking = True
+  Border = False
+  Utility = True
+  Stacking = Window.Above
+  Sticky = True
+  Opacity = 70
+  Transparent = True
+  { MovieBox1 MovieBox
+    MoveScaled(100,0,16,16)
+  }
+  { PictureBox1 PictureBox
+    MoveScaled(10,0,16,16)
+    Expand = True
+    Picture = Picture["wall-clock.png"]
+    Stretch = True
+    AutoResize = True
+  }
+  { Timer1 #Timer
+    #MoveScaled(28,2)
+    Enabled = True
+  }
+}

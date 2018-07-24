@@ -1,0 +1,7 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,93,67)
+  Background = Color.Background
+  Foreground = &H000000&
+}
